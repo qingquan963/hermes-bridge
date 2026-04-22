@@ -1,0 +1,43 @@
+# Build artifacts
+build/
+*.exe
+*.obj
+*.o
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.pch
+
+# Visual Studio
+*.vcxproj.user
+*.suo
+*.user
+*.opensdf
+*.sdf
+.vs/
+
+# Logs
+logs/
+*.log
+events.txt
+
+# Runtime files
+cmd_*.txt
+out_*.txt
+state.json
+
+# Workspace
+workspace/
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# nlohmann/json single header (we include it as-is, but build/ may have intermediates)
+include/build/
+
+# vcpkg (if any)
+vcpkg_install/

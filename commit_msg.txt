@@ -1,0 +1,6 @@
+Initial commit: Hermes Bridge v1.0
+
+Windows Daemon bridge service (C++)
+- Communicates with Hermes Agent in WSL via cmd/out files
+- Supports exec/file/http/ollama actions
+- WinHTTP native implementation, no external dependencies

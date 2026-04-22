@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "poll_interval_ms": 5000,
+  "worker_count": 5,
+  "default_timeout_sec": 30,
+  "log_dir": "logs",
+  "log_file": "events.txt",
+  "log_level": "info",
+  "log_max_size_mb": 10,
+  "log_backup_count": 5,
+  "work_dir": "C:\\lobster\\hermes_bridge",
+  "state_file": "state.json",
+  "max_request_size_kb": 10240,
+  "ollama_url": "http://127.0.0.1:11434/api/generate"
+}
