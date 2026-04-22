@@ -27,6 +27,7 @@ add_executable(hermes_bridge
     src/ResultWriter.cpp
     src/StateFile.cpp
     src/Logger.cpp
+    src/CallbackClient.cpp
     src/handlers/IHandler.cpp
     src/handlers/ExecHandler.cpp
     src/handlers/FileHandler.cpp

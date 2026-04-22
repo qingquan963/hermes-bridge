@@ -47,7 +47,16 @@ HandlerResult ExecHandler::handle(const HandlerContext& ctx) {
     }
 
     // P0-1: Validate command for dangerous characters to prevent RCE
-    const char* dangerous = ";|&$`()<>\\/";
+    // shell mode (powershell/cmd/python): block &`\<>() but allow | and ;
+    //   - | (pipe): allowed in PowerShell (管道操作符)
+    //   - ; (semicolon): allowed as statement separator in PowerShell/CMD
+    //   - && / ||: blocked via pair-detection below
+    //   - & alone: blocked (background operator)
+    // direct mode (shell="none"): block ;&|`()<>
+    // SHELL mode dangerous chars: &`\<>()  (no |, no ;)
+    // DIRECT mode dangerous chars: ;&|`()<>
+    const char* dangerous = (shell == "none") ? ";&|`()<>\\" : "&`\\()<>";
+
     for (const char* p = dangerous; *p; ++p) {
         if (command.find(*p) != std::string::npos) {
             std::ostringstream oss;

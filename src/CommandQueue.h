@@ -15,6 +15,8 @@ struct Command {
     int timeout = 30;
     std::string client_id;
     std::string timestamp;
+    bool force = false;  // if true, bypass any cmd_id deduplication cache
+    std::string cmd_callback_url;  // empty = no callback
 };
 
 class CommandQueue {

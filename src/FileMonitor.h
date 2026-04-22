@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 #include <mutex>
 #include <thread>
 #include <atomic>
@@ -35,6 +36,10 @@ private:
     mutable std::mutex clients_mtx_;
     std::unordered_set<std::string> clients_;
     std::string lastError_;
+
+    // Bug 1 fix: cmd_id deduplication cache (per-client)
+    mutable std::mutex seen_mtx_;
+    std::unordered_map<std::string, std::unordered_set<std::string>> seen_cmd_ids_;  // client_id -> set of cmd_ids
 };
 
 #endif // HERMES_BRIDGE_FILEMONITOR_H

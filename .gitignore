@@ -1,6 +1,10 @@
+# Release binaries - keep the built executable
+# (do NOT ignore Release/ so hermes_bridge.exe is tracked)
+Release/hermes_bridge.exe
+Release/hermes_bridge.json
+
 # Build artifacts
 build/
-*.exe
 *.obj
 *.o
 *.dll

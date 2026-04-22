@@ -18,6 +18,7 @@
 #include "FileMonitor.h"
 #include "ResultWriter.h"
 #include "StateFile.h"
+#include "CallbackClient.h"
 #include "handlers/IHandler.h"
 #include "handlers/ExecHandler.h"
 #include "handlers/FileHandler.h"
@@ -91,6 +92,11 @@ static void runCommandHandler(const Command& cmd) {
     resp["duration_ms"] = dur;
 
     g_writer->writeResult(cmd.client_id, resp);
+
+    // Async callback if callback_url is set
+    if (!cmd.cmd_callback_url.empty()) {
+        asyncCallback(cmd.cmd_callback_url, resp.dump(), cmd.client_id, cmd.cmd_id);
+    }
 
     LOG_INFO("[{}] Completed cmd {} (status={}, duration_ms={})",
         cmd.client_id, cmd.cmd_id, resp["status"].get<std::string>(), dur);

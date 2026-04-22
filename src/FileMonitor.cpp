@@ -152,11 +152,31 @@ bool FileMonitor::scanAndEnqueue() {
                 cmd.timeout = cmd_json.value("timeout", config_.default_timeout_sec);
                 cmd.timestamp = cmd_json.value("timestamp", "");
                 cmd.client_id = client_id;
+                // Bug 1 fix: parse force flag
+                cmd.force = cmd_json.value("force", false);
+                // Parse optional callback_url
+                cmd.cmd_callback_url = cmd_json.value("callback_url", "");
+
+                // Bug 1 fix: deduplicate by cmd_id (skip if not forced and already seen in this client)
+                if (!cmd.force) {
+                    std::lock_guard<std::mutex> lock(seen_mtx_);
+                    auto& seen = seen_cmd_ids_[client_id];
+                    if (seen.find(cmd.cmd_id) != seen.end()) {
+                        LOG_INFO("[{}] Skipping duplicate cmd {} (add force:true to re-execute)", client_id, cmd.cmd_id);
+                        continue;
+                    }
+                    seen.insert(cmd.cmd_id);
+                } else {
+                    // force=true: allow re-execution, update the cached cmd_id
+                    std::lock_guard<std::mutex> lock(seen_mtx_);
+                    seen_cmd_ids_[client_id].insert(cmd.cmd_id);
+                }
+
                 // Capture action before move (avoid use-after-move)
                 std::string action_for_log = cmd.action;
                 std::string cmd_id_for_log = cmd.cmd_id;
                 queue_.enqueue(std::move(cmd));
-                LOG_INFO("[{}] Enqueued cmd {} (action={})", client_id, cmd_id_for_log, action_for_log);
+                LOG_INFO("[{}] Enqueued cmd {} (action={}, force={})", client_id, cmd_id_for_log, action_for_log, cmd.force);
             }
 
             // Truncate cmd file after successful processing
