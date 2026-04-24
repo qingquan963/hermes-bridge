@@ -3,6 +3,10 @@
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "wldap32.lib")
 
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -18,6 +22,7 @@
 #include "FileMonitor.h"
 #include "ResultWriter.h"
 #include "StateFile.h"
+#include "HttpServer.h"
 #include "CallbackClient.h"
 #include "handlers/IHandler.h"
 #include "handlers/ExecHandler.h"
@@ -26,6 +31,7 @@
 #include "handlers/OllamaHandler.h"
 #include "handlers/ProcessHandler.h"
 #include "handlers/ServiceHandler.h"
+#include "handlers/TcpProxyHandler.h"
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -42,6 +48,8 @@ static std::atomic<uint64_t> g_total_requests{0};
 static std::atomic<uint64_t> g_errors{0};
 static Config g_config;
 static std::vector<std::thread> g_workers;
+static std::unique_ptr<HttpServer> g_httpServer;
+static TcpProxyHandler* g_tcpProxyHandler = nullptr;
 
 // Signal handler
 static BOOL WINAPI consoleCtrlHandler(DWORD dwCtrlType) {
@@ -169,7 +177,11 @@ int main(int argc, char* argv[]) {
     g_handlers["process_start"] = std::make_unique<ProcessHandler>();
     g_handlers["process_stop"] = std::make_unique<ProcessHandler>();
     g_handlers["ps_service_query"] = std::make_unique<ServiceHandler>();
-    LOG_INFO("Handlers registered: exec, file_read/write/patch, http_get/post, ollama, process_*, ps_service_query");
+    g_handlers["tcp_send"] = std::make_unique<TcpProxyHandler>();
+    g_handlers["tcp_connect"] = g_handlers["tcp_send"].get();  // alias
+    g_tcpProxyHandler = static_cast<TcpProxyHandler*>(g_handlers["tcp_send"].get());
+    g_tcpProxyHandler->setWorkDir(g_config.work_dir);
+    LOG_INFO("Handlers registered: exec, file_read/write/patch, http_get/post, ollama, process_*, ps_service_query, tcp_send");
 
     // Start worker threads
     g_workers.reserve(static_cast<size_t>(g_config.worker_count));
@@ -181,6 +193,19 @@ int main(int argc, char* argv[]) {
     // Start file monitor
     g_monitor = std::make_unique<FileMonitor>(g_config, g_queue);
     g_monitor->start();
+
+    // Start HTTP Server (callback endpoint on port 18900)
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        LOG_ERROR("WSAStartup failed");
+        return 1;
+    }
+    g_httpServer = std::make_unique<HttpServer>("127.0.0.1", 18900, g_config.work_dir);
+    if (!g_httpServer->start()) {
+        LOG_ERROR("Failed to start HTTP Server");
+    } else {
+        LOG_INFO("HTTP Server started on 127.0.0.1:18900");
+    }
 
     // Set running state
     g_state->setRunning(true);
@@ -210,6 +235,8 @@ int main(int argc, char* argv[]) {
 
     // Shutdown
     LOG_INFO("Hermes Bridge shutting down...");
+    if (g_httpServer) g_httpServer->stop();
+    WSACleanup();
     g_queue.wakeAll();
     g_monitor->stop();
     for (auto& t : g_workers) {

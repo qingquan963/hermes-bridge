@@ -28,6 +28,8 @@ add_executable(hermes_bridge
     src/StateFile.cpp
     src/Logger.cpp
     src/CallbackClient.cpp
+    src/HttpServer.cpp
+    src/CallbackWriter.cpp
     src/handlers/IHandler.cpp
     src/handlers/ExecHandler.cpp
     src/handlers/FileHandler.cpp
@@ -35,6 +37,7 @@ add_executable(hermes_bridge
     src/handlers/OllamaHandler.cpp
     src/handlers/ProcessHandler.cpp
     src/handlers/ServiceHandler.cpp
+    src/handlers/TcpProxyHandler.cpp
 )
 
 # Link Windows native libraries

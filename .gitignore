@@ -1,8 +1,3 @@
-# Release binaries - keep the built executable
-# (do NOT ignore Release/ so hermes_bridge.exe is tracked)
-Release/hermes_bridge.exe
-Release/hermes_bridge.json
-
 # Build artifacts
 build/
 *.obj
@@ -27,7 +22,7 @@ logs/
 *.log
 events.txt
 
-# Runtime files
+# Runtime files (generated at runtime)
 cmd_*.txt
 out_*.txt
 state.json
@@ -45,3 +40,34 @@ include/build/
 
 # vcpkg (if any)
 vcpkg_install/
+
+# CMake/VSE build artifacts (Regenerate from CMakeLists.txt)
+Release/CMakeCache.txt
+Release/CMakeFiles/
+Release/*.vcxproj
+Release/*.vcxproj.filters
+Release/*.slnx
+Release/*.xml
+Release/cmake_install.cmake
+Release/Makefile*
+Release/ZERO_CHECK.*
+Release/ALL_BUILD.*
+Release/HermesBridge.dir/
+Release/HermesBridge.tlog/
+Release/HermesBridge.log
+Release/HermesBridge.ilk
+Release/HermesBridge.pdb
+Release/x64/
+
+# Service binaries (deployment-only, version-controlled)
+# NOTE: hermes_bridge.exe should be committed as a binary artifact
+Release/hermes_bridge.exe
+Release/hermes_bridge.json
+Release/nssm.exe
+Release/winsw.exe
+Release/winsw.xml
+Release/imdisk.exe
+Release/MIGRATE_NSSM_TO_WINSW.md
+Release/start_hermes.bat
+Release/*.exe.old
+Release/*.exe.backup

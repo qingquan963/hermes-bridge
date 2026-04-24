@@ -53,9 +53,9 @@ HandlerResult ExecHandler::handle(const HandlerContext& ctx) {
     //   - && / ||: blocked via pair-detection below
     //   - & alone: blocked (background operator)
     // direct mode (shell="none"): block ;&|`()<>
-    // SHELL mode dangerous chars: &`\<>()  (no |, no ;)
+    // SHELL mode dangerous chars: &`<>  (no (), no \\)
     // DIRECT mode dangerous chars: ;&|`()<>
-    const char* dangerous = (shell == "none") ? ";&|`()<>\\" : "&`\\()<>";
+    const char* dangerous = (shell == "none") ? ";&|`()<>\\" : "&`<>";
 
     for (const char* p = dangerous; *p; ++p) {
         if (command.find(*p) != std::string::npos) {
